@@ -109,11 +109,11 @@ def setup_logging(logger: logging.Logger,
     logger.addHandler(counthandler)
 
     global formatter
-    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
-
     # Set & add the streamhandler and
     # add some color to those boring terminal logs! :-)
     if not quiet:
+        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
         coloredlogs.install(level=level, fmt=fmt, datefmt=datefmt)
 
 

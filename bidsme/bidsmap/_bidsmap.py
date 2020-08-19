@@ -75,11 +75,7 @@ class Bidsmap(object):
                 logger.error("{}: {}".format(err[0], err[1]))
                 raise
 
-        if '__bids__' in yaml_map:
-            ver = yaml_map['__bids__']
-        else:
-            ver = 'Unknown'
-
+        ver = yaml_map['__bids__'] if '__bids__' in yaml_map else 'Unknown'
         if self.version != ver:
             logger.warning('BIDS version conflict: '
                            '{} was created using version {}, '
@@ -88,7 +84,7 @@ class Bidsmap(object):
                            )
 
         # Over Modules (MRI, EEG etc..)
-        for module in self.Modules:
+        for module, value in self.Modules.items():
             if module not in yaml_map or not yaml_map[module]:
                 continue
 
@@ -96,7 +92,7 @@ class Bidsmap(object):
             for f_name, form in yaml_map[module].items():
                 if not form:
                     continue
-                if f_name not in self.Modules[module]:
+                if f_name not in value:
                     logger.warning("Failed to find type {}/{} "
                                    "readed from {}"
                                    .format(module, f_name, yamlfile))
@@ -266,19 +262,17 @@ class Bidsmap(object):
         logger.info("Writing bidsmap to: {}".format(filename))
         # TODO: use ruamel dump class ability
         # building dictionary
-        d = dict()
-        d["__bids__"] = self.version
-
+        d = {"__bids__": self.version}
         # Modules
         for m_name, module in self.Modules.items():
             if not module and not empty_modules:
                 continue
-            d[m_name] = dict()
+            d[m_name] = {}
             # formats
             for f_name, form in module.items():
                 if not form:
                     continue
-                d[m_name][f_name] = dict()
+                d[m_name][f_name] = {}
                 # modalities
                 for mod_name, modality in form.items():
                     if not modality:

@@ -137,10 +137,7 @@ if __name__ == "__main__":
         else:
             raise ValueError("Invalid command")
     except Exception as err:
-        if isinstance(err, exceptions.CoinException):
-            code = err.base + err.code
-        else:
-            code = 1
+        code = err.base + err.code if isinstance(err, exceptions.CoinException) else 1
         exc_type, exc_value, exc_traceback = os.sys.exc_info()
         tr = traceback.extract_tb(exc_traceback)
         for line in tr:

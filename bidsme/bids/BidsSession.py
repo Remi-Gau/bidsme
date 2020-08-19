@@ -175,9 +175,7 @@ class BidsSession(object):
             return False
         if self.__subject is None:
             return False
-        if self.__subject == "":
-            return False
-        return True
+        return self.__subject != ""
 
     def isSesValid(self) -> bool:
         """
@@ -186,18 +184,13 @@ class BidsSession(object):
         """
         if not self.__ses_locked:
             return False
-        if self.__session is None:
-            return False
-        return True
+        return self.__session is not None
 
     def isLocked(self) -> bool:
         """
         returns True if both session and subject are locked
         """
-        if not self.__sub_locked or not self.__ses_locked:
-            return False
-        else:
-            return True
+        return bool(self.__sub_locked and self.__ses_locked)
 
     @classmethod
     def loadSubjectFields(cls, filename: str = "") -> None:
@@ -313,12 +306,11 @@ class BidsSession(object):
         -------
         pandas.DataFrame
         """
-        values = list()
+        values = []
         for key, val in cls.__sub_values.items():
             values.extend(val)
 
-        df = pandas.DataFrame(values, columns=cls.getSubjectColumns())
-        return df
+        return pandas.DataFrame(values, columns=cls.getSubjectColumns())
 
     @classmethod
     def exportDefinitions(cls, filename: str) -> None:
@@ -354,6 +346,4 @@ class BidsSession(object):
         header = cls.__sub_columns.GetActive()
         if df.columns.size != len(header):
             return False
-        if not df.columns.difference(header).empty:
-            return False
-        return True
+        return bool(df.columns.difference(header).empty)

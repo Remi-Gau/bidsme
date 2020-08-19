@@ -82,10 +82,10 @@ class Run(object):
             file
         """
         self._bk_modality = None
-        self._bk_attribute = dict()
-        self._bk_entity = dict()
+        self._bk_attribute = {}
+        self._bk_entity = {}
         self._bk_suffix = None
-        self._bk_json = dict()
+        self._bk_json = {}
         self.writable = True
         self.template = False
         self.checked = False
@@ -102,9 +102,7 @@ class Run(object):
         """
         Return True if suffix is defined
         """
-        if self._suffix == "":
-            return False
-        return True
+        return self._suffix != ""
 
     @property
     def modality(self) -> str:
@@ -333,8 +331,8 @@ class Run(object):
         are lost
         """
         self._bk_modality = None
-        self._bk_attribute = dict()
-        self._bk_entity = dict()
+        self._bk_attribute = {}
+        self._bk_entity = {}
         self._bk_json = dict()
         self._bk_suffix = None
 
@@ -369,8 +367,7 @@ class Run(object):
             if True, the void and empty attributes are also dumped,
             if False, viod values are ignored
         """
-        d = dict()
-        d["provenance"] = self.provenance
+        d = {"provenance": self.provenance}
         if self.example:
             d["example"] = self.example
         if self.template:

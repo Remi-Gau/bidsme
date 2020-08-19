@@ -105,11 +105,11 @@ class ECAT(PET):
     def dump(self):
         if self._ECAT_CACHE is None:
             self.loadFile(0)
-        res = dict()
+        res = {}
         for key, val in self._ECAT_CACHE.items():
             res[key] = self.__transform(val)
         for index, im in enumerate(self._SUB_CACHE):
-            res[index] = dict()
+            res[index] = {}
             for key in im.dtype.names:
                 res[index][key] = self.__transform(im[key])
         for f in self.__specialFields:

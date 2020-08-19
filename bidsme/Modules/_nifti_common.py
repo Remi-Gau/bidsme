@@ -55,9 +55,7 @@ def isValidNIFTI(file: str) -> bool:
             magic = niifile.read(4)
         else:
             return False
-        if magic in (b'ni1\x00', b'n+1\x00', b'n+2\x00'):
-            return True
-        return False
+        return magic in (b'ni1\x00', b'n+1\x00', b'n+2\x00')
 
 
 def getEndType(path: str) -> tuple:
@@ -77,16 +75,9 @@ def getEndType(path: str) -> tuple:
     """
     with open(path, "rb") as niifile:
         header_size = struct.unpack("<i", niifile.read(4))[0]
-        if header_size in (348, 540):
-            endian = "<"
-        else:
-            endian = ">"
-
+        endian = "<" if header_size in (348, 540) else ">"
         if header_size in (348, 1543569408):
-            if path.endswith(".hdr"):
-                ftype = "ni1"
-            else:
-                ftype = "n+1"
+            ftype = "ni1" if path.endswith(".hdr") else "n+1"
             niifile.seek(40, 0)
             dim_0 = struct.unpack(endian + "h", niifile.read(2))[0]
             niifile.seek(344, 0)
@@ -133,7 +124,7 @@ def parceNIFTIheader_1(path: str, endian: str) -> dict:
     dict:
         parced header
     """
-    res = dict()
+    res = {}
     with open(path, "rb") as niifile:
         header = niifile.read(348)
 
@@ -193,7 +184,7 @@ def parceNIFTIheader_2(path: str, endian: str) -> dict:
     dict:
         parced header
     """
-    res = dict()
+    res = {}
     with open(path, "rb") as niifile:
         header = niifile.read(540)
 

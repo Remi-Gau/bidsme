@@ -326,7 +326,7 @@ def extractStruct(dataset: pydicom.dataset.Dataset) -> dict:
     -------
     dict
     """
-    res = dict()
+    res = {}
 
     for el in dataset:
         key = el.keyword
@@ -370,5 +370,4 @@ def combineDateTime(dataset: pydicom.Dataset, timeId: str) -> datetime:
         time_stamp = DICOMtransform(dataset[field])
     else:
         return None
-    acq = datetime.combine(date_stamp, time_stamp)
-    return acq
+    return datetime.combine(date_stamp, time_stamp)

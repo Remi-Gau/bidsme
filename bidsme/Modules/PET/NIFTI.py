@@ -84,9 +84,8 @@ class NIFTI(PET):
                 logger.warning('{}: file {} is hidden'
                                .format(cls.formatIdentity(),
                                        file))
-            if file.endswith(".hdr"):
-                if not os.path.isfile(file[:-4] + ".img"):
-                    return False
+            if file.endswith(".hdr") and not os.path.isfile(file[:-4] + ".img"):
+                return False
             try:
                 return _nifti_common.isValidNIFTI(file)
             except Exception:

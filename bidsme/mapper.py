@@ -186,10 +186,7 @@ def mapper(source: str, destination: str,
                            paths.local,
                            paths.config
                            )
-    if not fname:
-        bidsmapfile = os.path.join(bidscodefolder, bidsmapfile)
-    else:
-        bidsmapfile = fname
+    bidsmapfile = os.path.join(bidscodefolder, bidsmapfile) if not fname else fname
     logger.info("loading working bidsmap {}".format(bidsmapfile))
     bidsmap_new = bidsmap.Bidsmap(bidsmapfile)
 

@@ -241,10 +241,7 @@ def saveConfig(args: argparse.Namespace) -> None:
         config[args.cmd]["no_subject"] = args.no_subject
         config[args.cmd]["no_session"] = args.no_session
         config[args.cmd]["rec_folders"] = args.recfolder
-    elif args.cmd == "bidsify":
-        config["maps"]["map"] = args.bidsmap
-        config[args.cmd]["part_template"] = args.part_template
-    elif args.cmd == "process":
+    elif args.cmd in ["bidsify", "process"]:
         config["maps"]["map"] = args.bidsmap
         config[args.cmd]["part_template"] = args.part_template
     elif args.cmd == "map":

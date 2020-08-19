@@ -61,10 +61,10 @@ class hmriNIFTI(MRI):
 
         self._DICOMDICT_CACHE = None
         self._DICOMFILE_CACHE = ""
-        self.__alFree = list()
-        self.__adFree = list()
-        self.__csas = dict()
-        self.__phoenix = dict()
+        self.__alFree = []
+        self.__adFree = []
+        self.__csas = {}
+        self.__phoenix = {}
         self.__seqName = ""
 
         if rec_path:
@@ -116,24 +116,25 @@ class hmriNIFTI(MRI):
         return False
 
     def _loadFile(self, path: str) -> None:
-        if path != self._DICOMFILE_CACHE:
-            # The DICM tag may be missing for anonymized DICOM files
-            dicomdict = self.__loadJsonDump(path)
-            self._DICOMFILE_CACHE = path
-            self._DICOMDICT_CACHE = dicomdict
-            if self.setManufacturer(self._DICOMDICT_CACHE["Manufacturer"],
-                                    _hmriNIFTI.manufacturers):
-                self.resetMetaFields()
-                self.setupMetaFields(_hmriNIFTI.metafields)
-                self.testMetaFields()
+        if path == self._DICOMFILE_CACHE:
+            return
+        # The DICM tag may be missing for anonymized DICOM files
+        dicomdict = self.__loadJsonDump(path)
+        self._DICOMFILE_CACHE = path
+        self._DICOMDICT_CACHE = dicomdict
+        if self.setManufacturer(self._DICOMDICT_CACHE["Manufacturer"],
+                                _hmriNIFTI.manufacturers):
+            self.resetMetaFields()
+            self.setupMetaFields(_hmriNIFTI.metafields)
+            self.testMetaFields()
 
-            self.__seqName = self._DICOMDICT_CACHE["SequenceName"].lower()
-            if self.manufacturer == "Siemens":
-                self.__csas = self._DICOMDICT_CACHE["CSASeriesHeaderInfo"]
-                self.__phoenix = self.__csas["MrPhoenixProtocol"]
-                if "sWipMemBlock" in self.__phoenix:
-                    self.__alFree = self.__phoenix["sWipMemBlock"]["alFree"]
-                    self.__adFree = self.__phoenix["sWipMemBlock"]["adFree"]
+        self.__seqName = self._DICOMDICT_CACHE["SequenceName"].lower()
+        if self.manufacturer == "Siemens":
+            self.__csas = self._DICOMDICT_CACHE["CSASeriesHeaderInfo"]
+            self.__phoenix = self.__csas["MrPhoenixProtocol"]
+            if "sWipMemBlock" in self.__phoenix:
+                self.__alFree = self.__phoenix["sWipMemBlock"]["alFree"]
+                self.__adFree = self.__phoenix["sWipMemBlock"]["adFree"]
 
     def _getAcqTime(self) -> datetime:
         date_stamp = int(self.getField("AcquisitionDate"))
@@ -273,10 +274,7 @@ class hmriNIFTI(MRI):
 
             elif name == "MTState":
                 value = self.__phoenix["sPrepPulses"].get("ucMTC", 0)
-                if value == 0:
-                    value = "Off"
-                else:
-                    value = "On"
+                value = "Off" if value == 0 else "On"
             elif name == "ReceiveCoilActiveElements":
                 value = self._DICOMDICT_CACHE["CSASeriesHeaderInfo"]\
                         .get("CoilString", "")

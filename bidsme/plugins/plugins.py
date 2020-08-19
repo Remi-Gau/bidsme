@@ -36,7 +36,7 @@ from .entry_points import entry_points
 logger = logging.getLogger(__name__)
 
 file = ""
-active_plugins = dict()
+active_plugins = {}
 
 
 def ImportPlugins(plugin_file):

@@ -218,9 +218,8 @@ def prepare(source: str, destination: str,
     # Checking participants list
     ###############################
     new_sub_json = os.path.join(destination, "participants.json")
-    if not part_template:
-        if os.path.isfile(new_sub_json):
-            part_template = new_sub_json
+    if not part_template and os.path.isfile(new_sub_json):
+        part_template = new_sub_json
     BidsSession.loadSubjectFields(part_template)
 
     old_sub_file = os.path.join(destination, "participants.tsv")
@@ -242,12 +241,12 @@ def prepare(source: str, destination: str,
     sub_prefix_dir, sub_prefix = os.path.split(sub_prefix)
     ses_prefix_dir, ses_prefix = os.path.split(ses_prefix)
 
-    if not sub_no_dir:
+    if sub_no_dir:
+        sub_dirs = [source]
+    else:
         sub_dirs = tools.lsdirs(
                 os.path.join(source, sub_prefix_dir),
                 sub_prefix + '*')
-    else:
-        sub_dirs = [source]
     if not sub_dirs:
         logger.warning("No subject folders found")
 
@@ -267,13 +266,15 @@ def prepare(source: str, destination: str,
             continue
         scan.lock_subject()
 
-        if scan.subject is not None:
-            if tools.skipEntity(scan.subject, sub_list,
-                                old_sub if sub_skip_tsv else None,
-                                destination if sub_skip_dir else ""):
-                logger.info("Skipping subject '{}'"
-                            .format(scan.subject))
-                continue
+        if scan.subject is not None and tools.skipEntity(
+            scan.subject,
+            sub_list,
+            old_sub if sub_skip_tsv else None,
+            destination if sub_skip_dir else "",
+        ):
+            logger.info("Skipping subject '{}'"
+                        .format(scan.subject))
+            continue
 
         if not ses_no_dir:
             ses_dirs = tools.lsdirs(
@@ -287,13 +288,12 @@ def prepare(source: str, destination: str,
         for ses_dir in ses_dirs:
             scan.in_path = ses_dir
             logger.info("Scanning folder {}".format(ses_dir))
-            if not ses_no_dir:
-                scan.unlock_session()
+            scan.unlock_session()
+            if ses_no_dir:
+                scan.session = ""
+            else:
                 scan.session = os.path.basename(ses_dir)
                 scan.session = scan.session[len(ses_prefix):]
-            else:
-                scan.unlock_session()
-                scan.session = ""
             if plugins.RunPlugin("SessionEP", scan) < 0:
                 logger.warning("Session {} discarded by {}"
                                .format(scan.session, "SessionEP"))
@@ -303,11 +303,11 @@ def prepare(source: str, destination: str,
 
             if scan.session is not None:
                 skip = False
-                if ses_skip_dir:
-                    if os.path.isdir(os.path.join(destination,
-                                                  scan.session)):
-                        logger.debug("{} dir exists".format(scan.session))
-                        skip = True
+                if ses_skip_dir and os.path.isdir(
+                    os.path.join(destination, scan.session)
+                ):
+                    logger.debug("{} dir exists".format(scan.session))
+                    skip = True
                 if skip:
                     logger.info("Skipping session '{}'"
                                 .format(scan.session))

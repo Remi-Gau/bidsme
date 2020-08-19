@@ -191,16 +191,13 @@ def skipEntity(entity: str,
     """
     if not entity:
         return True
-    if ent_list:
-        if entity not in ent_list:
-            logger.debug("{} not in list".format(entity))
-            return True
-    if ent_serie is not None:
-        if entity in ent_serie.values:
-            logger.debug("{} in tsv".format(entity))
-            return True
-    if ent_path:
-        if os.path.isdir(os.path.join(ent_path, entity)):
-            logger.debug("{} dir exists".format(entity))
-            return True
+    if ent_list and entity not in ent_list:
+        logger.debug("{} not in list".format(entity))
+        return True
+    if ent_serie is not None and entity in ent_serie.values:
+        logger.debug("{} in tsv".format(entity))
+        return True
+    if ent_path and os.path.isdir(os.path.join(ent_path, entity)):
+        logger.debug("{} dir exists".format(entity))
+        return True
     return False

@@ -120,20 +120,20 @@ class baseModule(abstract):
         Basic class for module. Isn't intended to be
         initiated directly.
         """
-        self.files = list()
+        self.files = []
         self._recPath = ""
         self.index = -1
-        self.attributes = dict()
-        self.custom = dict()
+        self.attributes = {}
+        self.custom = {}
         self.labels = OrderedDict()
         self.suffix = ""
         self._modality = unknownmodality
         self._bidsSession = None
 
-        self.metaFields_req = dict()
-        self.metaFields_rec = dict()
-        self.metaFields_opt = dict()
-        self.metaAuxiliary = dict()
+        self.metaFields_req = {}
+        self.metaFields_rec = {}
+        self.metaFields_opt = {}
+        self.metaAuxiliary = {}
         self.rec_BIDSvalues = self.rec_BIDSfields.GetTemplate()
         self.sub_BIDSvalues = self.sub_BIDSfields.GetTemplate()
 
@@ -192,8 +192,7 @@ class baseModule(abstract):
             data_file = self.currentFile(True)
             json_file = "header_dump_" + tools.change_ext(data_file, "json")
             with open(os.path.join(destination, json_file), "w") as f:
-                d = dict()
-                d["format"] = self.formatIdentity()
+                d = {"format": self.formatIdentity()}
                 d["manufacturer"] = self.manufacturer
                 d["acqDateTime"] = self.acqTime()
                 d["subId"] = self._getSubId()
@@ -300,10 +299,10 @@ class baseModule(abstract):
         bool:
             True if at least one valid file found
         """
-        for file in os.listdir(rec_path):
-            if cls.isValidFile(os.path.join(rec_path, file)):
-                return True
-        return False
+        return any(
+            cls.isValidFile(os.path.join(rec_path, file))
+            for file in os.listdir(rec_path)
+        )
 
     @classmethod
     def getNumFiles(cls, folder: str) -> int:
@@ -536,10 +535,7 @@ class baseModule(abstract):
                                        "attribute from '{}'"
                                        .format(self.recIdentity(),
                                                query, field))
-                        if not raw:
-                            result = query
-                        else:
-                            result = None
+                        result = query if not raw else None
                 else:
                     prefix = ""
                     if ":" in query:
@@ -566,10 +562,7 @@ class baseModule(abstract):
                                            .format(self.recIdentity(),
                                                    query,
                                                    self.currentFile(False)))
-                            if not raw:
-                                result = query
-                            else:
-                                result = None
+                            result = query if not raw else None
                     else:
                         raise KeyError("Unknown prefix {}".format(prefix))
                 # if field is composed only of one entry
@@ -618,7 +611,7 @@ class baseModule(abstract):
         name = self._bidsSession.subject
         if name is None:
             subid = self._getSubId()
-        elif name == "" or name == "sub-":
+        elif name in ["", "sub-"]:
             subid = ""
         else:
             subid = self.getDynamicField(name,
@@ -652,7 +645,7 @@ class baseModule(abstract):
         name = self._bidsSession.session
         if name is None:
             subid = self._getSesId()
-        elif name == "" or name == "ses-":
+        elif name in ["", "ses-"]:
             subid = ""
         else:
             subid = self.getDynamicField(name,
@@ -1056,7 +1049,7 @@ class baseModule(abstract):
                                  self.index,
                                  run.modality))
 
-        self.metaAuxiliary = dict()
+        self.metaAuxiliary = {}
         for key, val in run.json.items():
             if key:
                 if isinstance(val, list):
@@ -1143,10 +1136,7 @@ class baseModule(abstract):
         definitions: dict
             dictionary with metadata fields definitions
         """
-        if self.manufacturer in definitions:
-            meta = definitions[self.manufacturer]
-        else:
-            meta = None
+        meta = definitions.get(self.manufacturer, None)
         meta_default = definitions["Unknown"]
 
         for metaFields in (self.metaFields_req,
@@ -1201,7 +1191,6 @@ class baseModule(abstract):
                                                    cleanup=False)
                     except Exception:
                         metaFields[mod][key] = None
-                        pass
                     if res is None:
                         metaFields[mod][key] = None
 
@@ -1270,7 +1259,7 @@ class baseModule(abstract):
         dict:
             resulting dictionary
         """
-        exp = dict()
+        exp = {}
         self.__fillMetaDict(exp, self.metaAuxiliary,
                             required=False,
                             ignore_null=True)
@@ -1355,7 +1344,7 @@ class baseModule(abstract):
             Run object with json dictionary to fill
         """
         modality = self.Modality()
-        if modality == ignoremodality or modality == unknownmodality:
+        if modality in [ignoremodality, unknownmodality]:
             return
 
         if modality in self.metaFields_req:
@@ -1441,10 +1430,7 @@ class baseModule(abstract):
         if pattern is None:
             return True
         if isinstance(pattern, list):
-            for val in pattern:
-                if tools.match_value(attval, val):
-                    return True
-            return False
+            return any(tools.match_value(attval, val) for val in pattern)
         return tools.match_value(attval, pattern)
 
     def match_run(self, run):

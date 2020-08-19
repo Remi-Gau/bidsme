@@ -71,10 +71,7 @@ class MetaField(object):
                                  .format(scaling))
 
     def __bool__(self):
-        if self.value is not None:
-            return True
-        else:
-            return False
+        return self.value is not None
 
     def __get_raw(self, value):
         self.__value = value
@@ -171,7 +168,7 @@ class fieldEntry(object):
             raise ValueError("name '{}' is invalid".format(name))
 
         self.__name = name
-        self.__values = dict()
+        self.__values = {}
 
         if longName != "":
             self.__values["LongName"] = longName
@@ -242,8 +239,8 @@ en/latest/02-common-principles.html
         """
         creator
         """
-        self.__library = list()
-        self.__indexes = dict()
+        self.__library = []
+        self.__indexes = {}
 
     def AddField(self, name, longName="", description="",
                  levels={}, units="", url="", activated=True,
@@ -326,18 +323,13 @@ en/latest/02-common-principles.html
         """
         returns number of active fields
         """
-        count = 0
-        for f in self.__library:
-            if f.Active():
-                count += 1
-        return count
+        return sum(1 for f in self.__library if f.Active())
 
     def GetActive(self):
         """
         returns a list of names of active fields
         """
-        active = [f.GetName() for f in self.__library if f.Active()]
-        return active
+        return [f.GetName() for f in self.__library if f.Active()]
 
     def GetHeader(self):
         """
@@ -375,7 +367,7 @@ latest/02-common-principles.html
         if not isinstance(values, dict):
             raise TypeError("values must be a dictionary")
         active = self.GetActive()
-        result = list()
+        result = []
         for f in active:
             if f in values:
                 result.append(self.Normalize(values[f]))
@@ -419,7 +411,7 @@ latest/02-common-principles.html
         returns a template dictionary for values with active fields
         as keys and None as values
         """
-        res = dict()
+        res = {}
         for f in self.__library:
             res[f.GetName()] = None
         return res
@@ -477,7 +469,7 @@ latest/02-common-principles.html
         if os.path.isfile(filename):
             logger.warning("JSON file {} already exists. It will be replaced."
                            .format(filename))
-        struct = dict()
+        struct = {}
 
         for f in self.__library:
             if f.Active():

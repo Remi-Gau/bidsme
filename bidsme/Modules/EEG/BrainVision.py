@@ -103,48 +103,48 @@ class BrainVision(EEG):
         return False
 
     def _loadFile(self, path: str) -> None:
-        if path != self._FILE_CACHE:
-            self.clearCache()
-            dirpath, base = os.path.split(path)
-            base = os.path.splitext(base)[0]
+        if path == self._FILE_CACHE:
+            return
+        self.clearCache()
+        dirpath, base = os.path.split(path)
+        base = os.path.splitext(base)[0]
 
-            with open(path, "r", encoding="utf-8") as f:
-                f.readline()
-                self._CACHE.read_file(self._readline_generator(f),
-                                      source=path)
+        with open(path, "r", encoding="utf-8") as f:
+            f.readline()
+            self._CACHE.read_file(self._readline_generator(f),
+                                  source=path)
 
-            self._datafile = self._genPath(
-                    dirpath,
-                    base,
-                    self._CACHE["Common Infos"]["DataFile"])
-            if not self._datafile:
-                raise ValueError("{}: {} DataFile not defined"
-                                 .format(self.formatIdentity(),
-                                         path))
-            if not self.getField("SamplingInterval"):
-                raise KeyError("{}: Sampling interval not defined"
-                               .format(self.formatIdentity()))
+        self._datafile = self._genPath(
+                dirpath,
+                base,
+                self._CACHE["Common Infos"]["DataFile"])
+        if not self._datafile:
+            raise ValueError("{}: {} DataFile not defined"
+                             .format(self.formatIdentity(),
+                                     path))
+        if not self.getField("SamplingInterval"):
+            raise KeyError("{}: Sampling interval not defined"
+                           .format(self.formatIdentity()))
 
-            if not os.path.isfile(self._datafile):
-                raise FileNotFoundError("{}: DataFile {} not found"
-                                        .format(self.formatIdentity(),
-                                                self._datafile))
-            self._markfile = self._genPath(
-                    dirpath,
-                    base,
-                    self._CACHE["Common Infos"].get("MarkerFile"))
-            if self._markfile:
-                if not os.path.isfile(self._markfile):
-                    raise FileNotFoundError("{}: MarkerFile {} not found"
-                                            .format(self.formatIdentity(),
-                                                    self._markfile))
+        if not os.path.isfile(self._datafile):
+            raise FileNotFoundError("{}: DataFile {} not found"
+                                    .format(self.formatIdentity(),
+                                            self._datafile))
+        self._markfile = self._genPath(
+                dirpath,
+                base,
+                self._CACHE["Common Infos"].get("MarkerFile"))
+        if self._markfile and not os.path.isfile(self._markfile):
+            raise FileNotFoundError("{}: MarkerFile {} not found"
+                                    .format(self.formatIdentity(),
+                                            self._markfile))
 
     def _getAcqTime(self) -> datetime:
         t = None
         if self._markfile:
             with open(self._markfile, "r", encoding="utf-8") as f:
                 decl = f.readline().strip()
-                if not decl != self.__fileversion:
+                if decl == self.__fileversion:
                     raise ValueError("{}: Incorrect Marker file version {}"
                                      .format(self.formatIdentity(),
                                              decl))
@@ -351,9 +351,9 @@ class BrainVision(EEG):
                                           "{}_acq-{}_coordsystem.json"
                                           .format(self.getBidsPrefix(),
                                                   self.labels["task"]))
-                d = {"EEGCoordinateSystem": "BESA",
-                     "EEGCoordinateSystemUnits": "mm"}
                 with open(dest_coord, "w") as f:
+                    d = {"EEGCoordinateSystem": "BESA",
+                         "EEGCoordinateSystemUnits": "mm"}
                     json.dump(d, f, indent="  ", separators=(',', ':'))
 
         # Gettin markers info
